@@ -108,11 +108,10 @@ export default function CustomersPage() {
                     </button>
 
                     <Dialog open={open} onOpenChange={setOpen}>
-                        <DialogTrigger asChild>
-                            <button className="btn-shine flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white transition-all duration-200 hover:scale-105 active:scale-95"
-                                style={{ background: "linear-gradient(135deg, oklch(0.60 0.22 280), oklch(0.50 0.22 300))", boxShadow: "0 4px 15px oklch(0.60 0.22 280 / 30%)" }}>
-                                <Plus className="h-4 w-4" /> Register Customer
-                            </button>
+                        <DialogTrigger
+                            className="btn-shine flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white transition-all duration-200 hover:scale-105 active:scale-95"
+                            style={{ background: "linear-gradient(135deg, oklch(0.60 0.22 280), oklch(0.50 0.22 300))", boxShadow: "0 4px 15px oklch(0.60 0.22 280 / 30%)" }}>
+                            <Plus className="h-4 w-4" /> Register Customer
                         </DialogTrigger>
                         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg" style={{ background: "oklch(0.14 0.015 260)", border: "1px solid oklch(1 0 0 / 10%)", boxShadow: "0 25px 50px oklch(0 0 0 / 60%)" }}>
                             <DialogHeader>
@@ -165,7 +164,7 @@ export default function CustomersPage() {
                                         </div>
                                         <div className="space-y-1.5">
                                             <Label className="text-xs" style={{ color: "oklch(0.70 0.20 220)" }}>Loyalty Tier</Label>
-                                            <Select value={form.loyaltyTier} onValueChange={(v) => setForm({ ...form, loyaltyTier: v })}>
+                                            <Select value={form.loyaltyTier} onValueChange={(v) => setForm({ ...form, loyaltyTier: v ?? "" })}>
                                                 <SelectTrigger className="rounded-xl" style={inputStyle}><SelectValue /></SelectTrigger>
                                                 <SelectContent style={{ background: "oklch(0.16 0.015 260)", border: "1px solid oklch(1 0 0 / 10%)" }}>
                                                     {["Silver", "Gold", "Platinum", "Diamond"].map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}

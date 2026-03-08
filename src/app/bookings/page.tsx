@@ -106,11 +106,10 @@ export default function BookingsPage() {
                         <RefreshCw className="h-4 w-4" style={{ color: "oklch(0.55 0.015 260)" }} />
                     </button>
                     <Dialog open={open} onOpenChange={setOpen}>
-                        <DialogTrigger asChild>
-                            <button className="btn-shine flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white transition-all hover:scale-105 active:scale-95"
-                                style={{ background: "linear-gradient(135deg, oklch(0.70 0.18 55), oklch(0.60 0.20 30))", boxShadow: "0 4px 15px oklch(0.70 0.18 55 / 30%)" }}>
-                                <Plus className="h-4 w-4" /> New Booking
-                            </button>
+                        <DialogTrigger
+                            className="btn-shine flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white transition-all hover:scale-105 active:scale-95"
+                            style={{ background: "linear-gradient(135deg, oklch(0.70 0.18 55), oklch(0.60 0.20 30))", boxShadow: "0 4px 15px oklch(0.70 0.18 55 / 30%)" }}>
+                            <Plus className="h-4 w-4" /> New Booking
                         </DialogTrigger>
                         <DialogContent style={{ background: "oklch(0.14 0.015 260)", border: "1px solid oklch(1 0 0 / 10%)", boxShadow: "0 25px 50px oklch(0 0 0 / 60%)" }}>
                             <DialogHeader>
@@ -119,7 +118,7 @@ export default function BookingsPage() {
                             <form onSubmit={handleCreate} className="space-y-4 mt-2">
                                 <div className="space-y-1.5">
                                     <Label className="text-xs text-slate-400">Customer</Label>
-                                    <Select value={form.cusId} onValueChange={(v) => setForm({ ...form, cusId: v })}>
+                                    <Select value={form.cusId} onValueChange={(v) => setForm({ ...form, cusId: v ?? "" })}>
                                         <SelectTrigger className="rounded-xl" style={inputStyle}><SelectValue placeholder="Select customer" /></SelectTrigger>
                                         <SelectContent style={{ background: "oklch(0.16 0.015 260)", border: "1px solid oklch(1 0 0 / 10%)" }}>
                                             {customers.map(c => <SelectItem key={c.cusId} value={String(c.cusId)}>{c.fname} {c.lname}</SelectItem>)}
@@ -128,7 +127,7 @@ export default function BookingsPage() {
                                 </div>
                                 <div className="space-y-1.5">
                                     <Label className="text-xs text-slate-400">Flight</Label>
-                                    <Select value={form.fid} onValueChange={(v) => setForm({ ...form, fid: v })}>
+                                    <Select value={form.fid} onValueChange={(v) => setForm({ ...form, fid: v ?? "" })}>
                                         <SelectTrigger className="rounded-xl" style={inputStyle}><SelectValue placeholder="Select flight" /></SelectTrigger>
                                         <SelectContent style={{ background: "oklch(0.16 0.015 260)", border: "1px solid oklch(1 0 0 / 10%)" }}>
                                             {flights.map(f => <SelectItem key={f.fid} value={String(f.fid)}>{f.fnumber} — {f.departureCity} → {f.arrivalCity}</SelectItem>)}
@@ -142,7 +141,7 @@ export default function BookingsPage() {
                                     </div>
                                     <div className="space-y-1.5">
                                         <Label className="text-xs text-slate-400">Status</Label>
-                                        <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
+                                        <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v ?? "" })}>
                                             <SelectTrigger className="rounded-xl" style={inputStyle}><SelectValue /></SelectTrigger>
                                             <SelectContent style={{ background: "oklch(0.16 0.015 260)", border: "1px solid oklch(1 0 0 / 10%)" }}>
                                                 {Object.keys(bookingStatus).map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
@@ -221,7 +220,7 @@ export default function BookingsPage() {
                                             </div>
                                         </TableCell>
                                         <TableCell>
-                                            <Select value={b.status} onValueChange={(v) => updateStatus(b.bookingId, v)}>
+                                            <Select value={b.status} onValueChange={(v) => updateStatus(b.bookingId, v ?? "")}>
                                                 <SelectTrigger className="h-8 w-32 rounded-lg text-xs" style={{ background: "oklch(0.18 0.015 260)", border: "1px solid oklch(1 0 0 / 8%)" }}>
                                                     <SelectValue />
                                                 </SelectTrigger>

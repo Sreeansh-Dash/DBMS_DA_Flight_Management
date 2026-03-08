@@ -103,18 +103,17 @@ export default function StaffPage() {
 
                     {/* Assign Flight */}
                     <Dialog open={openAssign} onOpenChange={setOpenAssign}>
-                        <DialogTrigger asChild>
-                            <button className="flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold transition-all hover:scale-105 active:scale-95"
-                                style={{ background: "oklch(0.18 0.015 260)", border: "1px solid oklch(1 0 0 / 10%)", color: "oklch(0.70 0.22 220)" }}>
-                                <Plane className="h-4 w-4" /> Assign Flight
-                            </button>
+                        <DialogTrigger
+                            className="flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition-all hover:scale-105 active:scale-95"
+                            style={{ background: "oklch(0.18 0.015 260)", border: "1px solid oklch(1 0 0 / 10%)", color: "oklch(0.70 0.22 220)" }}>
+                            <Plane className="h-4 w-4" /> Assign Flight
                         </DialogTrigger>
                         <DialogContent style={{ background: "oklch(0.14 0.015 260)", border: "1px solid oklch(1 0 0 / 10%)", boxShadow: "0 25px 50px oklch(0 0 0 / 60%)" }}>
                             <DialogHeader><DialogTitle className="text-lg font-bold text-slate-100">Assign Staff to Flight</DialogTitle></DialogHeader>
                             <form onSubmit={handleAssign} className="space-y-4 mt-2">
                                 <div className="space-y-1.5">
                                     <Label className="text-xs text-slate-400">Staff Member</Label>
-                                    <Select value={assignForm.staffId} onValueChange={(v) => setAssignForm({ ...assignForm, staffId: v })}>
+                                    <Select value={assignForm.staffId} onValueChange={(v) => setAssignForm({ ...assignForm, staffId: v ?? "" })}>
                                         <SelectTrigger className="rounded-xl" style={inputStyle}><SelectValue placeholder="Select staff" /></SelectTrigger>
                                         <SelectContent style={{ background: "oklch(0.16 0.015 260)", border: "1px solid oklch(1 0 0 / 10%)" }}>
                                             {staff.map(s => <SelectItem key={s.staffId} value={String(s.staffId)}>{s.firstN} {s.lastN} — {s.role}</SelectItem>)}
@@ -123,7 +122,7 @@ export default function StaffPage() {
                                 </div>
                                 <div className="space-y-1.5">
                                     <Label className="text-xs text-slate-400">Flight</Label>
-                                    <Select value={assignForm.fid} onValueChange={(v) => setAssignForm({ ...assignForm, fid: v })}>
+                                    <Select value={assignForm.fid} onValueChange={(v) => setAssignForm({ ...assignForm, fid: v ?? "" })}>
                                         <SelectTrigger className="rounded-xl" style={inputStyle}><SelectValue placeholder="Select flight" /></SelectTrigger>
                                         <SelectContent style={{ background: "oklch(0.16 0.015 260)", border: "1px solid oklch(1 0 0 / 10%)" }}>
                                             {flights.map(f => <SelectItem key={f.fid} value={String(f.fid)}>{f.fnumber} — {f.departureCity} → {f.arrivalCity}</SelectItem>)}
@@ -144,11 +143,10 @@ export default function StaffPage() {
 
                     {/* Add Staff */}
                     <Dialog open={openStaff} onOpenChange={setOpenStaff}>
-                        <DialogTrigger asChild>
-                            <button className="btn-shine flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white transition-all hover:scale-105 active:scale-95"
-                                style={{ background: "linear-gradient(135deg, oklch(0.65 0.18 160), oklch(0.55 0.18 180))", boxShadow: "0 4px 15px oklch(0.65 0.18 160 / 30%)" }}>
-                                <Plus className="h-4 w-4" /> Add Staff
-                            </button>
+                        <DialogTrigger
+                            className="btn-shine flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white transition-all hover:scale-105 active:scale-95"
+                            style={{ background: "linear-gradient(135deg, oklch(0.65 0.18 160), oklch(0.55 0.18 180))", boxShadow: "0 4px 15px oklch(0.65 0.18 160 / 30%)" }}>
+                            <Plus className="h-4 w-4" /> Add Staff
                         </DialogTrigger>
                         <DialogContent style={{ background: "oklch(0.14 0.015 260)", border: "1px solid oklch(1 0 0 / 10%)", boxShadow: "0 25px 50px oklch(0 0 0 / 60%)" }}>
                             <DialogHeader><DialogTitle className="text-lg font-bold text-slate-100">Add Staff Member</DialogTitle></DialogHeader>
@@ -162,7 +160,7 @@ export default function StaffPage() {
                                 <div className="grid grid-cols-2 gap-3">
                                     <div className="space-y-1.5">
                                         <Label className="text-xs text-slate-400">Role</Label>
-                                        <Select value={staffForm.role} onValueChange={(v) => setStaffForm({ ...staffForm, role: v })}>
+                                        <Select value={staffForm.role} onValueChange={(v) => setStaffForm({ ...staffForm, role: v ?? "" })}>
                                             <SelectTrigger className="rounded-xl" style={inputStyle}><SelectValue placeholder="Select role" /></SelectTrigger>
                                             <SelectContent style={{ background: "oklch(0.16 0.015 260)", border: "1px solid oklch(1 0 0 / 10%)" }}>
                                                 {Object.keys(roleConfig).map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
@@ -277,7 +275,7 @@ export default function StaffPage() {
                                 <Input value={depForm.name} onChange={(e) => setDepForm({ ...depForm, name: e.target.value })} required className="rounded-xl" style={inputStyle} /></div>
                             <div className="space-y-1.5">
                                 <Label className="text-xs text-slate-400">Relationship</Label>
-                                <Select value={depForm.relationship} onValueChange={(v) => setDepForm({ ...depForm, relationship: v })}>
+                                <Select value={depForm.relationship} onValueChange={(v) => setDepForm({ ...depForm, relationship: v ?? "" })}>
                                     <SelectTrigger className="rounded-xl" style={inputStyle}><SelectValue placeholder="Select" /></SelectTrigger>
                                     <SelectContent style={{ background: "oklch(0.16 0.015 260)", border: "1px solid oklch(1 0 0 / 10%)" }}>
                                         {["Spouse", "Son", "Daughter", "Father", "Mother", "Sibling", "Other"].map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}

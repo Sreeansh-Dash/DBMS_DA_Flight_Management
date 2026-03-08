@@ -104,14 +104,13 @@ export default function FlightsPage() {
                     </button>
 
                     <Dialog open={open} onOpenChange={setOpen}>
-                        <DialogTrigger asChild>
-                            <button className="btn-shine flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white transition-all duration-200 hover:scale-105 hover:shadow-lg active:scale-95"
-                                style={{
-                                    background: "linear-gradient(135deg, oklch(0.65 0.22 220), oklch(0.55 0.22 250))",
-                                    boxShadow: "0 4px 15px oklch(0.65 0.22 220 / 30%)",
-                                }}>
-                                <Plus className="h-4 w-4" /> Add Flight
-                            </button>
+                        <DialogTrigger
+                            className="btn-shine flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white transition-all duration-200 hover:scale-105 hover:shadow-lg active:scale-95"
+                            style={{
+                                background: "linear-gradient(135deg, oklch(0.65 0.22 220), oklch(0.55 0.22 250))",
+                                boxShadow: "0 4px 15px oklch(0.65 0.22 220 / 30%)",
+                            }}>
+                            <Plus className="h-4 w-4" /> Add Flight
                         </DialogTrigger>
                         <DialogContent className="border-0 sm:max-w-md" style={{ background: "oklch(0.14 0.015 260)", border: "1px solid oklch(1 0 0 / 10%)", boxShadow: "0 25px 50px oklch(0 0 0 / 60%)" }}>
                             <DialogHeader>
@@ -144,7 +143,7 @@ export default function FlightsPage() {
                                 </div>
                                 <div className="space-y-1.5">
                                     <Label className="text-xs text-slate-400">Status</Label>
-                                    <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
+                                    <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v ?? "" })}>
                                         <SelectTrigger className="rounded-xl" style={{ background: "oklch(0.18 0.015 260)", border: "1px solid oklch(1 0 0 / 8%)" }}>
                                             <SelectValue />
                                         </SelectTrigger>
@@ -215,7 +214,7 @@ export default function FlightsPage() {
                                             </div>
                                         </TableCell>
                                         <TableCell>
-                                            <Select value={f.status} onValueChange={(v) => updateStatus(f.fid, v)}>
+                                            <Select value={f.status} onValueChange={(v) => updateStatus(f.fid, v ?? "")}>
                                                 <SelectTrigger className="h-8 w-36 rounded-lg text-xs" style={{ background: "oklch(0.18 0.015 260)", border: "1px solid oklch(1 0 0 / 8%)" }}>
                                                     <SelectValue />
                                                 </SelectTrigger>
