@@ -1,11 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import {
     Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
@@ -15,7 +12,7 @@ import {
 import {
     Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Users, Plus, RefreshCw, Star, UserCheck } from "lucide-react";
+import { Users, Plus, RefreshCw, Star, UserCheck, ShieldCheck, Globe } from "lucide-react";
 import { toast } from "sonner";
 
 interface Customer {
@@ -28,6 +25,13 @@ interface Customer {
     regularCustomer: { travelFrequency: number; preferredAirline: string } | null;
     passport: { pno: string; country: string; issueDate: string; expiryDate: string } | null;
 }
+
+const tierColors: Record<string, { bg: string; color: string }> = {
+    Silver: { bg: "oklch(0.70 0.01 260 / 12%)", color: "oklch(0.75 0.01 260)" },
+    Gold: { bg: "oklch(0.75 0.18 60 / 12%)", color: "oklch(0.80 0.18 60)" },
+    Platinum: { bg: "oklch(0.65 0.22 220 / 12%)", color: "oklch(0.75 0.20 220)" },
+    Diamond: { bg: "oklch(0.60 0.22 280 / 12%)", color: "oklch(0.70 0.20 280)" },
+};
 
 export default function CustomersPage() {
     const [customers, setCustomers] = useState<Customer[]>([]);
@@ -54,7 +58,7 @@ export default function CustomersPage() {
 
     function validateExpiryDate(date: string) {
         if (date && new Date(date) <= new Date()) {
-            setDateError("Expiry date must be in the future!");
+            setDateError("Passport has expired — expiry date must be in the future!");
             return false;
         }
         setDateError("");
@@ -64,29 +68,16 @@ export default function CustomersPage() {
     async function handleCreate(e: React.FormEvent) {
         e.preventDefault();
         if (!validateExpiryDate(form.expiryDate)) return;
-
-        const payload = {
-            ...form,
-            customerType,
-            mileagePoints: parseInt(form.mileagePoints),
-            travelFrequency: parseInt(form.travelFrequency),
-        };
-
+        const payload = { ...form, customerType, mileagePoints: parseInt(form.mileagePoints), travelFrequency: parseInt(form.travelFrequency) };
         const res = await fetch("/api/customers", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload),
         });
-
         if (res.ok) {
             toast.success("Customer registered successfully");
             setOpen(false);
-            setForm({
-                fname: "", lname: "", email: "", dob: "",
-                passportNo: "", country: "", issueDate: "", expiryDate: "",
-                mileagePoints: "0", loyaltyTier: "Silver",
-                travelFrequency: "0", preferredAirline: "",
-            });
+            setForm({ fname: "", lname: "", email: "", dob: "", passportNo: "", country: "", issueDate: "", expiryDate: "", mileagePoints: "0", loyaltyTier: "Silver", travelFrequency: "0", preferredAirline: "" });
             fetchCustomers();
         } else {
             const err = await res.json();
@@ -94,210 +85,225 @@ export default function CustomersPage() {
         }
     }
 
+    const inputStyle = { background: "oklch(0.18 0.015 260)", border: "1px solid oklch(1 0 0 / 8%)" };
+
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
+            {/* Header */}
+            <div className="animate-fade-in-up flex items-end justify-between">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Customer Portal</h1>
-                    <p className="mt-1 text-muted-foreground">
-                        Register customers and manage passport details
-                    </p>
+                    <div className="flex items-center gap-2">
+                        <Users className="h-4 w-4" style={{ color: "oklch(0.70 0.22 280)" }} />
+                        <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: "oklch(0.65 0.20 280)" }}>Customer Portal</span>
+                    </div>
+                    <h1 className="mt-0.5 text-3xl font-bold tracking-tight" style={{ background: "linear-gradient(135deg, oklch(0.75 0.20 260), oklch(0.65 0.22 300))", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                        Customers
+                    </h1>
+                    <p className="mt-1 text-sm" style={{ color: "oklch(0.50 0.015 260)" }}>Register and manage passenger profiles</p>
                 </div>
                 <div className="flex gap-2">
-                    <Button variant="outline" size="icon" onClick={fetchCustomers} className="border-border/40">
-                        <RefreshCw className="h-4 w-4" />
-                    </Button>
+                    <button onClick={fetchCustomers} className="flex h-9 w-9 items-center justify-center rounded-xl transition-all duration-200 hover:scale-110 active:scale-95"
+                        style={{ background: "oklch(0.18 0.015 260)", border: "1px solid oklch(1 0 0 / 8%)" }}>
+                        <RefreshCw className="h-4 w-4" style={{ color: "oklch(0.55 0.015 260)" }} />
+                    </button>
+
                     <Dialog open={open} onOpenChange={setOpen}>
                         <DialogTrigger asChild>
-                            <Button className="bg-gradient-to-r from-violet-500 to-purple-600 shadow-lg shadow-violet-500/25 hover:shadow-violet-500/40">
-                                <Plus className="mr-2 h-4 w-4" /> Register Customer
-                            </Button>
+                            <button className="btn-shine flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white transition-all duration-200 hover:scale-105 active:scale-95"
+                                style={{ background: "linear-gradient(135deg, oklch(0.60 0.22 280), oklch(0.50 0.22 300))", boxShadow: "0 4px 15px oklch(0.60 0.22 280 / 30%)" }}>
+                                <Plus className="h-4 w-4" /> Register Customer
+                            </button>
                         </DialogTrigger>
-                        <DialogContent className="max-h-[90vh] overflow-y-auto border-border/40 bg-card/95 backdrop-blur-xl sm:max-w-lg">
+                        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg" style={{ background: "oklch(0.14 0.015 260)", border: "1px solid oklch(1 0 0 / 10%)", boxShadow: "0 25px 50px oklch(0 0 0 / 60%)" }}>
                             <DialogHeader>
-                                <DialogTitle>Register New Customer</DialogTitle>
+                                <DialogTitle className="text-lg font-bold text-slate-100">Register Customer</DialogTitle>
                             </DialogHeader>
-                            <form onSubmit={handleCreate} className="space-y-4">
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <Label>First Name</Label>
-                                        <Input value={form.fname} onChange={(e) => setForm({ ...form, fname: e.target.value })} required />
+                            <form onSubmit={handleCreate} className="space-y-4 mt-2">
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div className="space-y-1.5">
+                                        <Label className="text-xs text-slate-400">First Name</Label>
+                                        <Input value={form.fname} onChange={(e) => setForm({ ...form, fname: e.target.value })} required className="rounded-xl" style={inputStyle} />
                                     </div>
-                                    <div className="space-y-2">
-                                        <Label>Last Name</Label>
-                                        <Input value={form.lname} onChange={(e) => setForm({ ...form, lname: e.target.value })} required />
-                                    </div>
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <Label>Email</Label>
-                                        <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label>Date of Birth</Label>
-                                        <Input type="date" value={form.dob} onChange={(e) => setForm({ ...form, dob: e.target.value })} required />
+                                    <div className="space-y-1.5">
+                                        <Label className="text-xs text-slate-400">Last Name</Label>
+                                        <Input value={form.lname} onChange={(e) => setForm({ ...form, lname: e.target.value })} required className="rounded-xl" style={inputStyle} />
                                     </div>
                                 </div>
-
-                                {/* Customer Type */}
-                                <div className="space-y-2">
-                                    <Label>Customer Type</Label>
-                                    <Select value={customerType} onValueChange={(v: "frequent" | "regular") => setCustomerType(v)}>
-                                        <SelectTrigger><SelectValue /></SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="frequent">✈️ Frequent Flyer</SelectItem>
-                                            <SelectItem value="regular">👤 Regular Customer</SelectItem>
-                                        </SelectContent>
-                                    </Select>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div className="space-y-1.5">
+                                        <Label className="text-xs text-slate-400">Email</Label>
+                                        <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required className="rounded-xl" style={inputStyle} />
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <Label className="text-xs text-slate-400">Date of Birth</Label>
+                                        <Input type="date" value={form.dob} onChange={(e) => setForm({ ...form, dob: e.target.value })} required className="rounded-xl" style={inputStyle} />
+                                    </div>
                                 </div>
 
+                                {/* Customer Type Toggle */}
+                                <div className="flex rounded-xl p-1 gap-1" style={{ background: "oklch(0.16 0.015 260)", border: "1px solid oklch(1 0 0 / 6%)" }}>
+                                    {(["frequent", "regular"] as const).map((type) => (
+                                        <button key={type} type="button"
+                                            onClick={() => setCustomerType(type)}
+                                            className="flex-1 rounded-lg py-2 text-xs font-semibold transition-all duration-200"
+                                            style={{
+                                                background: customerType === type ? (type === "frequent" ? "oklch(0.65 0.22 220 / 20%)" : "oklch(0.60 0.22 280 / 20%)") : "transparent",
+                                                color: customerType === type ? (type === "frequent" ? "oklch(0.75 0.20 220)" : "oklch(0.70 0.20 280)") : "oklch(0.50 0.015 260)",
+                                                border: customerType === type ? `1px solid ${type === "frequent" ? "oklch(0.65 0.22 220 / 30%)" : "oklch(0.60 0.22 280 / 30%)"}` : "1px solid transparent",
+                                            }}>
+                                            {type === "frequent" ? "✈️ Frequent Flyer" : "👤 Regular Customer"}
+                                        </button>
+                                    ))}
+                                </div>
+
+                                {/* Conditional Fields */}
                                 {customerType === "frequent" ? (
-                                    <div className="grid grid-cols-2 gap-4 rounded-lg border border-sky-500/20 bg-sky-500/5 p-3">
-                                        <div className="space-y-2">
-                                            <Label className="text-sky-400">Mileage Points</Label>
-                                            <Input type="number" value={form.mileagePoints} onChange={(e) => setForm({ ...form, mileagePoints: e.target.value })} />
+                                    <div className="grid grid-cols-2 gap-3 rounded-xl p-3" style={{ background: "oklch(0.65 0.22 220 / 6%)", border: "1px solid oklch(0.65 0.22 220 / 15%)" }}>
+                                        <div className="space-y-1.5">
+                                            <Label className="text-xs" style={{ color: "oklch(0.70 0.20 220)" }}>Mileage Points</Label>
+                                            <Input type="number" value={form.mileagePoints} onChange={(e) => setForm({ ...form, mileagePoints: e.target.value })} className="rounded-xl" style={inputStyle} />
                                         </div>
-                                        <div className="space-y-2">
-                                            <Label className="text-sky-400">Loyalty Tier</Label>
+                                        <div className="space-y-1.5">
+                                            <Label className="text-xs" style={{ color: "oklch(0.70 0.20 220)" }}>Loyalty Tier</Label>
                                             <Select value={form.loyaltyTier} onValueChange={(v) => setForm({ ...form, loyaltyTier: v })}>
-                                                <SelectTrigger><SelectValue /></SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="Silver">Silver</SelectItem>
-                                                    <SelectItem value="Gold">Gold</SelectItem>
-                                                    <SelectItem value="Platinum">Platinum</SelectItem>
-                                                    <SelectItem value="Diamond">Diamond</SelectItem>
+                                                <SelectTrigger className="rounded-xl" style={inputStyle}><SelectValue /></SelectTrigger>
+                                                <SelectContent style={{ background: "oklch(0.16 0.015 260)", border: "1px solid oklch(1 0 0 / 10%)" }}>
+                                                    {["Silver", "Gold", "Platinum", "Diamond"].map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
                                                 </SelectContent>
                                             </Select>
                                         </div>
                                     </div>
                                 ) : (
-                                    <div className="grid grid-cols-2 gap-4 rounded-lg border border-violet-500/20 bg-violet-500/5 p-3">
-                                        <div className="space-y-2">
-                                            <Label className="text-violet-400">Travel Frequency</Label>
-                                            <Input type="number" value={form.travelFrequency} onChange={(e) => setForm({ ...form, travelFrequency: e.target.value })} />
+                                    <div className="grid grid-cols-2 gap-3 rounded-xl p-3" style={{ background: "oklch(0.60 0.22 280 / 6%)", border: "1px solid oklch(0.60 0.22 280 / 15%)" }}>
+                                        <div className="space-y-1.5">
+                                            <Label className="text-xs" style={{ color: "oklch(0.70 0.20 280)" }}>Travel Frequency</Label>
+                                            <Input type="number" value={form.travelFrequency} onChange={(e) => setForm({ ...form, travelFrequency: e.target.value })} className="rounded-xl" style={inputStyle} />
                                         </div>
-                                        <div className="space-y-2">
-                                            <Label className="text-violet-400">Preferred Airline</Label>
-                                            <Input value={form.preferredAirline} onChange={(e) => setForm({ ...form, preferredAirline: e.target.value })} />
+                                        <div className="space-y-1.5">
+                                            <Label className="text-xs" style={{ color: "oklch(0.70 0.20 280)" }}>Preferred Airline</Label>
+                                            <Input value={form.preferredAirline} onChange={(e) => setForm({ ...form, preferredAirline: e.target.value })} className="rounded-xl" style={inputStyle} />
                                         </div>
                                     </div>
                                 )}
 
-                                {/* Passport */}
-                                <div className="space-y-3 rounded-lg border border-amber-500/20 bg-amber-500/5 p-3">
-                                    <p className="text-sm font-semibold text-amber-400">Passport Details</p>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <Label>Passport Number</Label>
-                                            <Input value={form.passportNo} onChange={(e) => setForm({ ...form, passportNo: e.target.value })} required />
+                                {/* Passport Section */}
+                                <div className="space-y-3 rounded-xl p-3" style={{ background: "oklch(0.70 0.18 60 / 6%)", border: "1px solid oklch(0.70 0.18 60 / 20%)" }}>
+                                    <div className="flex items-center gap-2">
+                                        <ShieldCheck className="h-3.5 w-3.5" style={{ color: "oklch(0.75 0.18 60)" }} />
+                                        <p className="text-xs font-semibold" style={{ color: "oklch(0.75 0.18 60)" }}>Passport Details</p>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div className="space-y-1.5">
+                                            <Label className="text-xs text-slate-400">Passport No</Label>
+                                            <Input value={form.passportNo} onChange={(e) => setForm({ ...form, passportNo: e.target.value })} required className="rounded-xl" style={inputStyle} />
                                         </div>
-                                        <div className="space-y-2">
-                                            <Label>Country</Label>
-                                            <Input value={form.country} onChange={(e) => setForm({ ...form, country: e.target.value })} required />
+                                        <div className="space-y-1.5">
+                                            <Label className="text-xs text-slate-400">Country</Label>
+                                            <Input value={form.country} onChange={(e) => setForm({ ...form, country: e.target.value })} required className="rounded-xl" style={inputStyle} />
                                         </div>
                                     </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <Label>Issue Date</Label>
-                                            <Input type="date" value={form.issueDate} onChange={(e) => setForm({ ...form, issueDate: e.target.value })} required />
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div className="space-y-1.5">
+                                            <Label className="text-xs text-slate-400">Issue Date</Label>
+                                            <Input type="date" value={form.issueDate} onChange={(e) => setForm({ ...form, issueDate: e.target.value })} required className="rounded-xl" style={inputStyle} />
                                         </div>
-                                        <div className="space-y-2">
-                                            <Label>Expiry Date</Label>
-                                            <Input
-                                                type="date"
-                                                value={form.expiryDate}
-                                                onChange={(e) => {
-                                                    setForm({ ...form, expiryDate: e.target.value });
-                                                    validateExpiryDate(e.target.value);
-                                                }}
-                                                required
-                                            />
+                                        <div className="space-y-1.5">
+                                            <Label className="text-xs text-slate-400">Expiry Date</Label>
+                                            <Input type="date" value={form.expiryDate}
+                                                onChange={(e) => { setForm({ ...form, expiryDate: e.target.value }); validateExpiryDate(e.target.value); }}
+                                                required className="rounded-xl" style={inputStyle} />
                                             {dateError && (
-                                                <p className="text-xs font-medium text-red-400">{dateError}</p>
+                                                <p className="flex items-center gap-1 text-[11px] font-medium" style={{ color: "oklch(0.70 0.20 25)" }}>
+                                                    ⚠️ {dateError}
+                                                </p>
                                             )}
                                         </div>
                                     </div>
                                 </div>
 
-                                <Button type="submit" className="w-full bg-gradient-to-r from-violet-500 to-purple-600" disabled={!!dateError}>
+                                <button type="submit" disabled={!!dateError} className="btn-shine w-full rounded-xl py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                                    style={{ background: "linear-gradient(135deg, oklch(0.60 0.22 280), oklch(0.50 0.22 300))", boxShadow: "0 4px 15px oklch(0.60 0.22 280 / 30%)" }}>
                                     Register Customer
-                                </Button>
+                                </button>
                             </form>
                         </DialogContent>
                     </Dialog>
                 </div>
             </div>
 
-            <Card className="border-border/40 bg-card/50 backdrop-blur-sm">
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                        <Users className="h-5 w-5 text-violet-500" />
-                        All Customers ({customers.length})
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    {loading ? (
-                        <div className="space-y-3">
-                            {[...Array(5)].map((_, i) => (
-                                <div key={i} className="h-12 animate-pulse rounded-lg bg-muted" />
-                            ))}
-                        </div>
-                    ) : (
-                        <Table>
-                            <TableHeader>
-                                <TableRow className="border-border/40 hover:bg-transparent">
-                                    <TableHead>CusID</TableHead>
-                                    <TableHead>Name</TableHead>
-                                    <TableHead>Email</TableHead>
-                                    <TableHead>Type</TableHead>
-                                    <TableHead>Passport</TableHead>
-                                    <TableHead>Details</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {customers.map((c) => (
-                                    <TableRow key={c.cusId} className="border-border/40">
-                                        <TableCell className="font-mono text-muted-foreground">#{c.cusId}</TableCell>
-                                        <TableCell className="font-semibold">{c.fname} {c.lname}</TableCell>
-                                        <TableCell className="text-muted-foreground">{c.email}</TableCell>
-                                        <TableCell>
-                                            {c.frequentFlyer ? (
-                                                <Badge variant="outline" className="bg-sky-500/15 text-sky-400 border-sky-500/30">
-                                                    <Star className="mr-1 h-3 w-3" /> Frequent Flyer
-                                                </Badge>
-                                            ) : (
-                                                <Badge variant="outline" className="bg-violet-500/15 text-violet-400 border-violet-500/30">
-                                                    <UserCheck className="mr-1 h-3 w-3" /> Regular
-                                                </Badge>
-                                            )}
-                                        </TableCell>
-                                        <TableCell>
-                                            {c.passport ? (
-                                                <span className="text-sm text-muted-foreground">
-                                                    {c.passport.pno} ({c.passport.country})
-                                                </span>
-                                            ) : (
-                                                <span className="text-sm text-red-400">No passport</span>
-                                            )}
-                                        </TableCell>
-                                        <TableCell>
-                                            {c.frequentFlyer ? (
-                                                <span className="text-xs text-muted-foreground">
-                                                    {c.frequentFlyer.mileagePoints.toLocaleString()} pts · {c.frequentFlyer.loyaltyTier}
-                                                </span>
-                                            ) : c.regularCustomer ? (
-                                                <span className="text-xs text-muted-foreground">
-                                                    {c.regularCustomer.travelFrequency} trips · {c.regularCustomer.preferredAirline}
-                                                </span>
-                                            ) : null}
-                                        </TableCell>
-                                    </TableRow>
+            {/* Table */}
+            <div className="animate-fade-in-up animate-delay-100 overflow-hidden rounded-2xl"
+                style={{ background: "oklch(0.145 0.015 260 / 70%)", border: "1px solid oklch(1 0 0 / 8%)", backdropFilter: "blur(20px)" }}>
+                <div className="flex items-center gap-3 px-6 py-4" style={{ borderBottom: "1px solid oklch(1 0 0 / 6%)" }}>
+                    <div className="flex h-7 w-7 items-center justify-center rounded-lg" style={{ background: "oklch(0.60 0.22 280 / 12%)" }}>
+                        <Users className="h-3.5 w-3.5" style={{ color: "oklch(0.65 0.20 280)" }} />
+                    </div>
+                    <span className="font-semibold text-slate-200">All Customers</span>
+                    <span className="rounded-full px-2 py-0.5 text-xs font-medium" style={{ background: "oklch(0.60 0.22 280 / 12%)", color: "oklch(0.65 0.20 280)" }}>
+                        {customers.length}
+                    </span>
+                </div>
+
+                {loading ? (
+                    <div className="space-y-px p-4">
+                        {[...Array(6)].map((_, i) => <div key={i} className="skeleton h-11 rounded-xl" style={{ animationDelay: `${i * 80}ms` }} />)}
+                    </div>
+                ) : (
+                    <Table>
+                        <TableHeader>
+                            <TableRow className="border-0 hover:bg-transparent">
+                                {["CusID", "Name", "Email", "Type", "Passport", "Details"].map(h => (
+                                    <TableHead key={h} className="text-xs font-semibold uppercase tracking-wider" style={{ color: "oklch(0.45 0.015 260)" }}>{h}</TableHead>
                                 ))}
-                            </TableBody>
-                        </Table>
-                    )}
-                </CardContent>
-            </Card>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {customers.map((c, i) => (
+                                <TableRow key={c.cusId} className="table-row-hover border-0" style={{ animationDelay: `${i * 30}ms` }}>
+                                    <TableCell className="font-mono text-xs" style={{ color: "oklch(0.40 0.015 260)" }}>#{c.cusId}</TableCell>
+                                    <TableCell className="font-semibold text-slate-100">{c.fname} {c.lname}</TableCell>
+                                    <TableCell className="text-sm" style={{ color: "oklch(0.55 0.015 260)" }}>{c.email}</TableCell>
+                                    <TableCell>
+                                        {c.frequentFlyer ? (
+                                            <div className="flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold w-fit"
+                                                style={{ background: "oklch(0.65 0.22 220 / 12%)", color: "oklch(0.75 0.20 220)" }}>
+                                                <Star className="h-3 w-3" /> Frequent Flyer
+                                            </div>
+                                        ) : (
+                                            <div className="flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold w-fit"
+                                                style={{ background: "oklch(0.60 0.22 280 / 12%)", color: "oklch(0.70 0.20 280)" }}>
+                                                <UserCheck className="h-3 w-3" /> Regular
+                                            </div>
+                                        )}
+                                    </TableCell>
+                                    <TableCell>
+                                        {c.passport ? (
+                                            <div className="flex items-center gap-1.5 text-xs" style={{ color: "oklch(0.55 0.015 260)" }}>
+                                                <Globe className="h-3 w-3" style={{ color: "oklch(0.70 0.18 60)" }} />
+                                                {c.passport.pno} · {c.passport.country}
+                                            </div>
+                                        ) : (
+                                            <span className="text-xs font-medium" style={{ color: "oklch(0.65 0.20 25)" }}>No passport</span>
+                                        )}
+                                    </TableCell>
+                                    <TableCell className="text-xs" style={{ color: "oklch(0.55 0.015 260)" }}>
+                                        {c.frequentFlyer ? (
+                                            <span>
+                                                <span style={tierColors[c.frequentFlyer.loyaltyTier] ? { color: tierColors[c.frequentFlyer.loyaltyTier].color } : {}}>
+                                                    {c.frequentFlyer.loyaltyTier}
+                                                </span>
+                                                {" · "}{c.frequentFlyer.mileagePoints.toLocaleString()} pts
+                                            </span>
+                                        ) : c.regularCustomer ? (
+                                            <span>{c.regularCustomer.travelFrequency} trips · {c.regularCustomer.preferredAirline}</span>
+                                        ) : null}
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                )}
+            </div>
         </div>
     );
 }

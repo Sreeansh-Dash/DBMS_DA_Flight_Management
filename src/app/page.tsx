@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plane, Users, BookOpen, UserCog, TrendingUp, ArrowUpRight } from "lucide-react";
+import Link from "next/link";
+import { Plane, Users, BookOpen, UserCog, TrendingUp, ArrowUpRight, Sparkles } from "lucide-react";
 
 interface Stats {
   flights: number;
@@ -10,6 +10,70 @@ interface Stats {
   bookings: number;
   staff: number;
 }
+
+const cards = [
+  {
+    title: "Total Flights",
+    key: "flights" as keyof Stats,
+    icon: Plane,
+    href: "/flights",
+    gradient: "from-sky-500 to-blue-600",
+    glow: "0 0 30px oklch(0.65 0.22 220 / 25%)",
+    border: "oklch(0.65 0.22 220 / 20%)",
+    iconBg: "oklch(0.65 0.22 220 / 12%)",
+    iconColor: "oklch(0.75 0.20 220)",
+    delay: 0,
+  },
+  {
+    title: "Customers",
+    key: "customers" as keyof Stats,
+    icon: Users,
+    href: "/customers",
+    gradient: "from-violet-500 to-purple-600",
+    glow: "0 0 30px oklch(0.60 0.22 280 / 25%)",
+    border: "oklch(0.60 0.22 280 / 20%)",
+    iconBg: "oklch(0.60 0.22 280 / 12%)",
+    iconColor: "oklch(0.70 0.22 280)",
+    delay: 100,
+  },
+  {
+    title: "Bookings",
+    key: "bookings" as keyof Stats,
+    icon: BookOpen,
+    href: "/bookings",
+    gradient: "from-amber-500 to-orange-600",
+    glow: "0 0 30px oklch(0.70 0.18 60 / 25%)",
+    border: "oklch(0.70 0.18 60 / 20%)",
+    iconBg: "oklch(0.70 0.18 60 / 12%)",
+    iconColor: "oklch(0.75 0.18 60)",
+    delay: 200,
+  },
+  {
+    title: "Crew Members",
+    key: "staff" as keyof Stats,
+    icon: UserCog,
+    href: "/staff",
+    gradient: "from-emerald-500 to-green-600",
+    glow: "0 0 30px oklch(0.65 0.18 160 / 25%)",
+    border: "oklch(0.65 0.18 160 / 20%)",
+    iconBg: "oklch(0.65 0.18 160 / 12%)",
+    iconColor: "oklch(0.70 0.18 160)",
+    delay: 300,
+  },
+];
+
+const schemaItems = [
+  { model: "Flight", desc: "FID, fnumber, seats, cities, status", badge: "Primary", color: "oklch(0.65 0.22 220)" },
+  { model: "Customer", desc: "CusID, name, email, DOB", badge: "Primary", color: "oklch(0.60 0.22 280)" },
+  { model: "FrequentFlyer", desc: "Mileage points, loyalty tier", badge: "1:1 Subtype", color: "oklch(0.65 0.22 220)" },
+  { model: "RegularCustomer", desc: "Travel frequency, preferred airline", badge: "1:1 Subtype", color: "oklch(0.60 0.22 280)" },
+  { model: "Passport", desc: "PNo, country, issue/expiry dates", badge: "1:1", color: "oklch(0.70 0.18 60)" },
+  { model: "Booking", desc: "ID, date, status, price", badge: "1:N", color: "oklch(0.70 0.18 60)" },
+  { model: "FlightStaff", desc: "StaffID, name, role, email", badge: "Primary", color: "oklch(0.65 0.18 160)" },
+  { model: "Dependent", desc: "Name, relationship, DOB, contact", badge: "Weak Entity", color: "oklch(0.65 0.18 160)" },
+  { model: "WorksOn", desc: "Flight-Staff mapping + hours", badge: "M:N Join", color: "oklch(0.65 0.22 220)" },
+  { model: "FlightCustomer", desc: "Flight-Customer mapping", badge: "M:N Join", color: "oklch(0.60 0.22 280)" },
+];
 
 export default function DashboardPage() {
   const [stats, setStats] = useState<Stats>({ flights: 0, customers: 0, bookings: 0, staff: 0 });
@@ -25,13 +89,11 @@ export default function DashboardPage() {
           fetch("/api/staff").then((r) => r.json()),
         ]);
         setStats({
-          flights: flights.length,
-          customers: customers.length,
-          bookings: bookings.length,
-          staff: staff.length,
+          flights: Array.isArray(flights) ? flights.length : 0,
+          customers: Array.isArray(customers) ? customers.length : 0,
+          bookings: Array.isArray(bookings) ? bookings.length : 0,
+          staff: Array.isArray(staff) ? staff.length : 0,
         });
-      } catch (error) {
-        console.error("Failed to fetch stats:", error);
       } finally {
         setLoading(false);
       }
@@ -39,150 +101,114 @@ export default function DashboardPage() {
     fetchStats();
   }, []);
 
-  const cards = [
-    {
-      title: "Total Flights",
-      value: stats.flights,
-      icon: Plane,
-      gradient: "from-sky-500 to-blue-600",
-      shadow: "shadow-sky-500/25",
-      bg: "bg-sky-500/10",
-    },
-    {
-      title: "Customers",
-      value: stats.customers,
-      icon: Users,
-      gradient: "from-violet-500 to-purple-600",
-      shadow: "shadow-violet-500/25",
-      bg: "bg-violet-500/10",
-    },
-    {
-      title: "Bookings",
-      value: stats.bookings,
-      icon: BookOpen,
-      gradient: "from-amber-500 to-orange-600",
-      shadow: "shadow-amber-500/25",
-      bg: "bg-amber-500/10",
-    },
-    {
-      title: "Crew Members",
-      value: stats.staff,
-      icon: UserCog,
-      gradient: "from-emerald-500 to-green-600",
-      shadow: "shadow-emerald-500/25",
-      bg: "bg-emerald-500/10",
-    },
-  ];
-
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-        <p className="mt-1 text-muted-foreground">
-          Welcome to SkyOps Flight Management System
+      <div className="animate-fade-in-up">
+        <div className="flex items-center gap-2">
+          <Sparkles className="h-5 w-5" style={{ color: "oklch(0.75 0.20 220)" }} />
+          <span className="text-sm font-medium" style={{ color: "oklch(0.65 0.20 220)" }}>Live System</span>
+        </div>
+        <h1 className="mt-1 text-4xl font-bold tracking-tight gradient-text">Dashboard</h1>
+        <p className="mt-1 text-sm" style={{ color: "oklch(0.55 0.015 260)" }}>
+          Welcome to SkyOps — your full-stack flight operations center
         </p>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      {/* Stat Cards */}
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {cards.map((card) => (
-          <Card
-            key={card.title}
-            className="group relative overflow-hidden border-border/40 bg-card/50 backdrop-blur-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-xl"
-          >
-            <div className={`absolute inset-0 bg-gradient-to-br ${card.gradient} opacity-0 transition-opacity duration-300 group-hover:opacity-5`} />
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                {card.title}
-              </CardTitle>
-              <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${card.bg}`}>
-                <card.icon className={`h-5 w-5 bg-gradient-to-br ${card.gradient} bg-clip-text text-transparent`} style={{ stroke: "url(#grad)" }} />
-                <card.icon className={`absolute h-5 w-5 text-sky-500 opacity-0`} />
-              </div>
-            </CardHeader>
-            <CardContent>
-              {loading ? (
-                <div className="h-9 w-20 animate-pulse rounded-lg bg-muted" />
-              ) : (
-                <div className="flex items-baseline gap-2">
-                  <p className="text-3xl font-bold">{card.value}</p>
-                  <ArrowUpRight className="h-4 w-4 text-emerald-500" />
+          <Link key={card.title} href={card.href}>
+            <div
+              className="card-hover animate-fade-in-up group relative overflow-hidden rounded-2xl p-5 cursor-pointer"
+              style={{
+                background: "oklch(0.145 0.015 260 / 70%)",
+                border: `1px solid ${card.border}`,
+                backdropFilter: "blur(20px)",
+                animationDelay: `${card.delay}ms`,
+                transition: "box-shadow 0.3s ease, border-color 0.3s ease",
+              }}
+              onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = card.glow; (e.currentTarget as HTMLDivElement).style.borderColor = card.border.replace("20%", "40%"); }}
+              onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = "none"; (e.currentTarget as HTMLDivElement).style.borderColor = card.border; }}
+            >
+              {/* Background gradient on hover */}
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl"
+                style={{ background: `linear-gradient(135deg, ${card.border.replace("20%", "8%")}, transparent)` }} />
+
+              <div className="relative flex items-start justify-between">
+                <div>
+                  <p className="text-xs font-medium uppercase tracking-widest" style={{ color: "oklch(0.50 0.015 260)" }}>
+                    {card.title}
+                  </p>
+                  {loading ? (
+                    <div className="skeleton mt-2 h-10 w-16" />
+                  ) : (
+                    <p className="stat-number mt-1 text-4xl font-bold text-slate-100">
+                      {stats[card.key]}
+                    </p>
+                  )}
+                  <div className="mt-2 flex items-center gap-1 text-xs font-medium" style={{ color: card.iconColor }}>
+                    <ArrowUpRight className="h-3 w-3" />
+                    <span>View all</span>
+                  </div>
                 </div>
-              )}
-            </CardContent>
-          </Card>
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3"
+                  style={{ background: card.iconBg }}>
+                  <card.icon className="h-5 w-5" style={{ color: card.iconColor }} />
+                </div>
+              </div>
+            </div>
+          </Link>
         ))}
       </div>
 
-      {/* Quick Info */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card className="border-border/40 bg-card/50 backdrop-blur-sm">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <TrendingUp className="h-5 w-5 text-sky-500" />
-              System Overview
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="rounded-lg bg-accent/50 p-4">
-              <h3 className="font-semibold">Flight Management</h3>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Track all scheduled flights, monitor status updates (Arrived, Departed, Delayed, Cancelled), and manage seat capacity.
-              </p>
-            </div>
-            <div className="rounded-lg bg-accent/50 p-4">
-              <h3 className="font-semibold">Customer & Passport Portal</h3>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Register customers with passport validation, manage Frequent Flyer and Regular Customer profiles with loyalty tiers.
-              </p>
-            </div>
-            <div className="rounded-lg bg-accent/50 p-4">
-              <h3 className="font-semibold">Booking System</h3>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Create and manage flight reservations, track payment status (Paid, Cancelled, Changed), and handle super-bookings.
-              </p>
-            </div>
-            <div className="rounded-lg bg-accent/50 p-4">
-              <h3 className="font-semibold">Staff Management</h3>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Manage flight crew assignments, track working hours, and maintain emergency contact information for dependents.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border/40 bg-card/50 backdrop-blur-sm">
-          <CardHeader>
-            <CardTitle className="text-lg">Database Schema</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3 text-sm">
-              {[
-                { model: "Flight", desc: "FID, fnumber, seats, cities, status", badge: "Primary" },
-                { model: "Customer", desc: "CusID, name, email, DOB", badge: "Primary" },
-                { model: "FrequentFlyer", desc: "Mileage points, loyalty tier", badge: "1:1 Subtype" },
-                { model: "RegularCustomer", desc: "Travel frequency, preferred airline", badge: "1:1 Subtype" },
-                { model: "Passport", desc: "PNo, country, issue/expiry dates", badge: "1:1" },
-                { model: "Booking", desc: "ID, date, status, price", badge: "1:N" },
-                { model: "FlightStaff", desc: "StaffID, name, role, email", badge: "Primary" },
-                { model: "Dependent", desc: "Name, relationship, DOB, contact", badge: "Weak Entity" },
-                { model: "WorksOn", desc: "Flight-Staff mapping + hours", badge: "M:N Join" },
-                { model: "FlightCustomer", desc: "Flight-Customer mapping", badge: "M:N Join" },
-              ].map((item) => (
-                <div key={item.model} className="flex items-center justify-between rounded-lg bg-accent/30 px-3 py-2">
-                  <div>
-                    <span className="font-medium">{item.model}</span>
-                    <span className="ml-2 text-muted-foreground">{item.desc}</span>
-                  </div>
-                  <span className="rounded-full bg-sky-500/10 px-2 py-0.5 text-xs font-medium text-sky-400">
-                    {item.badge}
-                  </span>
+      {/* Bottom Grid */}
+      <div className="grid gap-6 lg:grid-cols-5">
+        {/* System Overview — 3 cols */}
+        <div className="animate-fade-in-up animate-delay-400 lg:col-span-3 rounded-2xl p-6"
+          style={{ background: "oklch(0.145 0.015 260 / 70%)", border: "1px solid oklch(1 0 0 / 8%)", backdropFilter: "blur(20px)" }}>
+          <div className="flex items-center gap-2 mb-5">
+            <TrendingUp className="h-4 w-4" style={{ color: "oklch(0.65 0.22 220)" }} />
+            <h2 className="font-semibold text-slate-200">System Overview</h2>
+          </div>
+          <div className="space-y-3">
+            {[
+              { title: "Flight Management", desc: "Track all scheduled flights, monitor status updates (Arrived, Departed, Delayed, Cancelled), and manage seat capacity.", color: "oklch(0.65 0.22 220)", dot: "oklch(0.70 0.20 220)" },
+              { title: "Customer & Passport Portal", desc: "Register customers with passport validation, manage Frequent Flyer and Regular Customer profiles with loyalty tiers.", color: "oklch(0.60 0.22 280)", dot: "oklch(0.65 0.20 280)" },
+              { title: "Booking System", desc: "Create and manage flight reservations, track payment status (Paid, Cancelled, Changed), and handle super-bookings.", color: "oklch(0.70 0.18 60)", dot: "oklch(0.75 0.18 60)" },
+              { title: "Staff Management", desc: "Manage flight crew assignments, track working hours, and maintain emergency contact information for dependents.", color: "oklch(0.65 0.18 160)", dot: "oklch(0.70 0.18 160)" },
+            ].map((item, i) => (
+              <div key={i} className="group flex gap-3 rounded-xl p-3 transition-all duration-200 hover:scale-[1.01]"
+                style={{ background: "oklch(0.18 0.015 260)", border: "1px solid oklch(1 0 0 / 5%)" }}>
+                <div className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center">
+                  <div className="pulse-dot h-2.5 w-2.5 rounded-full" style={{ background: item.dot }} />
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+                <div>
+                  <h3 className="text-sm font-semibold text-slate-200">{item.title}</h3>
+                  <p className="mt-0.5 text-xs leading-relaxed" style={{ color: "oklch(0.50 0.015 260)" }}>{item.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Schema — 2 cols */}
+        <div className="animate-fade-in-up animate-delay-400 lg:col-span-2 rounded-2xl p-6"
+          style={{ background: "oklch(0.145 0.015 260 / 70%)", border: "1px solid oklch(1 0 0 / 8%)", backdropFilter: "blur(20px)" }}>
+          <h2 className="mb-4 font-semibold text-slate-200">Database Schema</h2>
+          <div className="space-y-1.5">
+            {schemaItems.map((item) => (
+              <div key={item.model} className="flex items-center justify-between rounded-lg px-3 py-2 transition-all duration-150 hover:scale-[1.01]"
+                style={{ background: "oklch(0.18 0.015 260)" }}>
+                <span className="text-xs font-semibold text-slate-300">{item.model}</span>
+                <span className="rounded-full px-2 py-0.5 text-[10px] font-semibold"
+                  style={{ background: `${item.color.replace(")", " / 12%)")}`, color: item.color }}>
+                  {item.badge}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
