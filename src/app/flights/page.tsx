@@ -40,9 +40,11 @@ export default function FlightsPage() {
 
     async function fetchFlights() {
         setLoading(true);
-        const res = await fetch("/api/flights");
-        const data = await res.json();
-        setFlights(data);
+        try {
+            const res = await fetch("/api/flights");
+            const data = await res.json();
+            setFlights(Array.isArray(data) ? data : []);
+        } catch { setFlights([]); }
         setLoading(false);
     }
 
