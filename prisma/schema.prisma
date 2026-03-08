@@ -1,14 +1,194 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ───────────────────────────────────────────────
+
+enum FlightStatus {
+  Arrived
+  Cancelled
+  Departed
+  Delayed
+}
+
+enum BookingStatus {
+  Paid
+  Cancelled
+  Changed
+}
+
+// ─── Flight ──────────────────────────────────────────────
+
+model Flight {
+  fid           Int            @id @default(autoincrement())
+  fnumber       String         @db.VarChar(20)
+  totalSeats    Int
+  arrivalCity   String         @db.VarChar(100)
+  departureCity String         @db.VarChar(100)
+  status        FlightStatus   @default(Departed)
+
+  // M:N relations
+  worksOn          WorksOn[]
+  flightCustomers  FlightCustomer[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("flights")
+}
+
+// ─── Customer ────────────────────────────────────────────
+
+model Customer {
+  cusId  Int      @id @default(autoincrement())
+  fname  String   @db.VarChar(50)
+  lname  String   @db.VarChar(50)
+  email  String   @unique @db.VarChar(100)
+  dob    DateTime @db.Date
+
+  // 1:1 specializations
+  frequentFlyer   FrequentFlyer?
+  regularCustomer RegularCustomer?
+
+  // 1:1 passport
+  passport Passport?
+
+  // 1:N bookings
+  bookings Booking[]
+
+  // M:N with flights
+  flightCustomers FlightCustomer[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("customers")
+}
+
+// ─── Frequent Flyer (1:1 subtype) ────────────────────────
+
+model FrequentFlyer {
+  cusId        Int      @id
+  mileagePoints Int     @default(0)
+  loyaltyTier  String   @db.VarChar(30)
+
+  customer Customer @relation(fields: [cusId], references: [cusId], onDelete: Cascade)
+
+  @@map("frequent_flyers")
+}
+
+// ─── Regular Customer (1:1 subtype) ──────────────────────
+
+model RegularCustomer {
+  cusId            Int    @id
+  travelFrequency  Int    @default(0)
+  preferredAirline String @db.VarChar(100)
+
+  customer Customer @relation(fields: [cusId], references: [cusId], onDelete: Cascade)
+
+  @@map("regular_customers")
+}
+
+// ─── Flight Staff ────────────────────────────────────────
+
+model FlightStaff {
+  staffId Int    @id @default(autoincrement())
+  firstN  String @db.VarChar(50)
+  lastN   String @db.VarChar(50)
+  role    String @db.VarChar(50)
+  email   String @unique @db.VarChar(100)
+
+  // Weak entity
+  dependents Dependent[]
+
+  // M:N with flights
+  worksOn WorksOn[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("flight_staff")
+}
+
+// ─── Dependent (Weak Entity) ─────────────────────────────
+
+model Dependent {
+  staffId      Int
+  name         String   @db.VarChar(100)
+  relationship String   @db.VarChar(50)
+  dob          DateTime @db.Date
+  contact      String   @db.VarChar(20)
+
+  staff FlightStaff @relation(fields: [staffId], references: [staffId], onDelete: Cascade)
+
+  @@id([staffId, name])
+  @@map("dependents")
+}
+
+// ─── Passport (1:1 with Customer) ────────────────────────
+
+model Passport {
+  pno        String   @id @db.VarChar(20)
+  country    String   @db.VarChar(60)
+  issueDate  DateTime @db.Date
+  expiryDate DateTime @db.Date
+  cusId      Int      @unique
+
+  customer Customer @relation(fields: [cusId], references: [cusId], onDelete: Cascade)
+
+  @@map("passports")
+}
+
+// ─── Booking ─────────────────────────────────────────────
+
+model Booking {
+  bookingId      Int           @id @default(autoincrement())
+  bookingDate    DateTime      @default(now())
+  status         BookingStatus @default(Paid)
+  price          Float
+  superBookingId Int?
+
+  cusId Int
+  customer Customer @relation(fields: [cusId], references: [cusId], onDelete: Cascade)
+
+  // Self-relation for super-booking
+  superBooking Booking?  @relation("BookingHierarchy", fields: [superBookingId], references: [bookingId])
+  subBookings  Booking[] @relation("BookingHierarchy")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("bookings")
+}
+
+// ─── WorksOn (M:N join: Flight ↔ FlightStaff) ───────────
+
+model WorksOn {
+  fid     Int
+  staffId Int
+  hours   Float @default(0)
+
+  flight Flight      @relation(fields: [fid], references: [fid], onDelete: Cascade)
+  staff  FlightStaff @relation(fields: [staffId], references: [staffId], onDelete: Cascade)
+
+  @@id([fid, staffId])
+  @@map("works_on")
+}
+
+// ─── FlightCustomer (M:N join: Flight ↔ Customer) ────────
+
+model FlightCustomer {
+  fid   Int
+  cusId Int
+
+  flight   Flight   @relation(fields: [fid], references: [fid], onDelete: Cascade)
+  customer Customer @relation(fields: [cusId], references: [cusId], onDelete: Cascade)
+
+  @@id([fid, cusId])
+  @@map("flight_customers")
 }

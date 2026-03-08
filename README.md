@@ -1,36 +1,156 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ✈️ SkyOps — Flight Management System
 
-## Getting Started
+A full-stack **Flight Management System** built as a Database Management Systems (DBMS) project. It demonstrates advanced relational modeling concepts including **entity specialization (1:1 subtypes)**, **weak entities**, **M:N join tables with attributes**, **self-referencing relations**, and strict **constraint enforcement** (enums, NOT-NULL, date validation).
 
-First, run the development server:
+## 🛠️ Tech Stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+| Layer | Technology |
+|---|---|
+| **Frontend** | Next.js 16 (App Router), React 19, TypeScript |
+| **Styling** | Tailwind CSS v4, shadcn/ui |
+| **Backend** | Next.js API Route Handlers |
+| **ORM** | Prisma 6 |
+| **Database** | PostgreSQL (Supabase) |
+| **Validation** | Zod |
+
+## 📊 Database Schema
+
+The relational model implements **10 entities** with strict referential integrity:
+
+```
+┌──────────────┐       1:1        ┌──────────────────┐
+│   Customer   │──────────────────│  FrequentFlyer   │
+│  (CusID PK)  │                  │ (mileage, tier)  │
+│              │──────────────────│                  │
+│              │       1:1        ├──────────────────┤
+│              │──────────────────│ RegularCustomer  │
+│              │                  │ (freq, airline)  │
+│              │       1:1        ├──────────────────┤
+│              │──────────────────│    Passport      │
+│              │                  │ (PNo PK, expiry) │
+│              │       1:N        ├──────────────────┤
+│              │──────────────────│    Booking       │
+│              │                  │ (status, price)  │
+└──────┬───────┘                  └──────────────────┘
+       │ M:N
+       │
+┌──────┴───────┐       M:N        ┌──────────────────┐
+│    Flight    │──────────────────│  FlightStaff     │
+│  (FID PK)    │   (WorksOn +    │ (StaffID PK)     │
+│              │    hours attr)   │                  │
+└──────────────┘                  └───────┬──────────┘
+                                          │ 1:N (Weak)
+                                  ┌───────┴──────────┐
+                                  │   Dependent      │
+                                  │ (name, contact)  │
+                                  └──────────────────┘
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Constraints Enforced
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Constraint | Implementation |
+|---|---|
+| **Flight Status** | Enum: `Arrived`, `Cancelled`, `Departed`, `Delayed` |
+| **Booking Status** | Enum: `Paid`, `Cancelled`, `Changed` |
+| **Passport Expiry** | Application-level: `expiryDate > today` |
+| **NOT-NULL** | `fnumber`, `email`, `contact` (on Dependent) |
+| **Unique** | Customer email, Staff email |
+| **Weak Entity** | Dependent has composite PK (`staffId` + `name`) |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🚀 Getting Started
 
-## Learn More
+### Prerequisites
 
-To learn more about Next.js, take a look at the following resources:
+- **Node.js** v18+
+- **PostgreSQL** database (or use [Supabase](https://supabase.com) / [Neon](https://neon.tech) free tier)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Setup
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+# 1. Clone the repository
+git clone https://github.com/Sreeansh-Dash/DBMS_DA_Flight_Management.git
+cd DBMS_DA_Flight_Management
 
-## Deploy on Vercel
+# 2. Install dependencies
+npm install
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+# 3. Configure environment
+#    Create a .env file with your PostgreSQL connection string:
+echo 'DATABASE_URL="postgresql://user:password@host:5432/dbname"' > .env
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+# 4. Push schema to database
+npx prisma db push
+
+# 5. Generate Prisma client
+npx prisma generate
+
+# 6. Seed the database with test data
+npx prisma db seed
+
+# 7. Start the development server
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) to view the application.
+
+## 📁 Project Structure
+
+```
+├── prisma/
+│   ├── schema.prisma          # Database schema (10 models)
+│   └── seed.ts                # Seed script with test data
+├── src/
+│   ├── app/
+│   │   ├── api/               # REST API route handlers
+│   │   │   ├── flights/       # Flight CRUD
+│   │   │   ├── customers/     # Customer + Passport CRUD
+│   │   │   ├── bookings/      # Booking CRUD
+│   │   │   ├── staff/         # Staff + Dependents CRUD
+│   │   │   └── works-on/      # Flight-Staff assignments
+│   │   ├── flights/           # Flight Dashboard page
+│   │   ├── customers/         # Customer Portal page
+│   │   ├── bookings/          # Booking System page
+│   │   ├── staff/             # Staff Management page
+│   │   ├── layout.tsx         # Root layout with sidebar
+│   │   └── page.tsx           # Dashboard home
+│   ├── components/ui/         # shadcn/ui components
+│   └── lib/
+│       ├── prisma.ts          # Prisma client singleton
+│       └── validations.ts     # Zod validation schemas
+└── package.json
+```
+
+## 🖥️ Application Pages
+
+| Page | Route | Features |
+|---|---|---|
+| **Dashboard** | `/` | Live stats, system overview, schema reference |
+| **Flight Dashboard** | `/flights` | Flight table, colored status badges, inline status updates, add flight |
+| **Customer Portal** | `/customers` | Registration with FF/Regular toggle, passport with date validation |
+| **Booking System** | `/bookings` | Create bookings, select customer + flight, track payment status |
+| **Staff Management** | `/staff` | Crew cards, tabbed flights/dependents, flight assignment with hours |
+
+## 🗃️ Seed Data
+
+The seed script populates the database with:
+- **8 flights** (domestic + international routes)
+- **6 customers** (3 Frequent Flyers, 3 Regular)
+- **6 passports** with valid future expiry dates
+- **4 staff** members with dependents
+- **8 flight-staff assignments** with hours
+- **7 flight-customer mappings**
+- **6 bookings** (Paid, Changed, Cancelled)
+
+## 🔧 Useful Commands
+
+```bash
+npm run dev              # Start dev server
+npx prisma studio        # Open Prisma Studio (DB GUI)
+npx prisma db seed       # Re-seed database
+npx prisma db push       # Push schema changes
+npx prisma generate      # Regenerate Prisma client
+```
+
+---
+
+**Built for DBMS DA-2 Assignment** · Next.js · Prisma · PostgreSQL
