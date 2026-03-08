@@ -12,8 +12,9 @@ export async function GET() {
             orderBy: { createdAt: "desc" },
         });
         return NextResponse.json(flights);
-    } catch (error) {
-        return NextResponse.json({ error: "Failed to fetch flights" }, { status: 500 });
+    } catch (error: any) {
+        console.error("GET Flights Error:", error);
+        return NextResponse.json({ error: "Failed to fetch flights: " + (error?.message || String(error)) }, { status: 500 });
     }
 }
 

@@ -12,8 +12,9 @@ export async function GET() {
             orderBy: { createdAt: "desc" },
         });
         return NextResponse.json(staff);
-    } catch (error) {
-        return NextResponse.json({ error: "Failed to fetch staff" }, { status: 500 });
+    } catch (error: any) {
+        console.error("GET Staff Error:", error);
+        return NextResponse.json({ error: "Failed to fetch staff: " + (error?.message || String(error)) }, { status: 500 });
     }
 }
 
