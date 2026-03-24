@@ -15,83 +15,40 @@ async function main() {
     await prisma.regularCustomer.deleteMany();
     await prisma.customer.deleteMany();
     await prisma.flightStaff.deleteMany();
-    await prisma.flight.deleteMany();
+    await prisma.flightIdentification.deleteMany();
+    await prisma.flightDetails.deleteMany();
 
-    // ─── Flights ───────────────────────────────────────────
+    // ─── Flight Details ────────────────────────────────────
+    const flightDetailsData = [
+        { fnumber: "AI-101", totalSeats: 180, arrivalCity: "Mumbai", departureCity: "Delhi" },
+        { fnumber: "6E-205", totalSeats: 220, arrivalCity: "Bangalore", departureCity: "Chennai" },
+        { fnumber: "SG-312", totalSeats: 150, arrivalCity: "Kolkata", departureCity: "Hyderabad" },
+        { fnumber: "UK-478", totalSeats: 200, arrivalCity: "Delhi", departureCity: "Pune" },
+        { fnumber: "AI-890", totalSeats: 300, arrivalCity: "London", departureCity: "Delhi" },
+        { fnumber: "6E-550", totalSeats: 180, arrivalCity: "Goa", departureCity: "Mumbai" },
+        { fnumber: "SG-777", totalSeats: 160, arrivalCity: "Jaipur", departureCity: "Delhi" },
+        { fnumber: "UK-900", totalSeats: 250, arrivalCity: "Singapore", departureCity: "Chennai" },
+    ];
+
+    await Promise.all(flightDetailsData.map(data => 
+        prisma.flightDetails.create({ data })
+    ));
+
+    console.log(`✅ Created ${flightDetailsData.length} flight details`);
+
+    // ─── Flight Identifications ──────────────────────────
     const flights = await Promise.all([
-        prisma.flight.create({
-            data: {
-                fnumber: "AI-101",
-                totalSeats: 180,
-                arrivalCity: "Mumbai",
-                departureCity: "Delhi",
-                status: "Departed",
-            },
-        }),
-        prisma.flight.create({
-            data: {
-                fnumber: "6E-205",
-                totalSeats: 220,
-                arrivalCity: "Bangalore",
-                departureCity: "Chennai",
-                status: "Arrived",
-            },
-        }),
-        prisma.flight.create({
-            data: {
-                fnumber: "SG-312",
-                totalSeats: 150,
-                arrivalCity: "Kolkata",
-                departureCity: "Hyderabad",
-                status: "Delayed",
-            },
-        }),
-        prisma.flight.create({
-            data: {
-                fnumber: "UK-478",
-                totalSeats: 200,
-                arrivalCity: "Delhi",
-                departureCity: "Pune",
-                status: "Cancelled",
-            },
-        }),
-        prisma.flight.create({
-            data: {
-                fnumber: "AI-890",
-                totalSeats: 300,
-                arrivalCity: "London",
-                departureCity: "Delhi",
-                status: "Departed",
-            },
-        }),
-        prisma.flight.create({
-            data: {
-                fnumber: "6E-550",
-                totalSeats: 180,
-                arrivalCity: "Goa",
-                departureCity: "Mumbai",
-                status: "Arrived",
-            },
-        }),
-        prisma.flight.create({
-            data: {
-                fnumber: "SG-777",
-                totalSeats: 160,
-                arrivalCity: "Jaipur",
-                departureCity: "Delhi",
-                status: "Delayed",
-            },
-        }),
-        prisma.flight.create({
-            data: {
-                fnumber: "UK-900",
-                totalSeats: 250,
-                arrivalCity: "Singapore",
-                departureCity: "Chennai",
-                status: "Departed",
-            },
-        }),
+        prisma.flightIdentification.create({ data: { fnumber: "AI-101", status: "Departed" } }),
+        prisma.flightIdentification.create({ data: { fnumber: "6E-205", status: "Arrived" } }),
+        prisma.flightIdentification.create({ data: { fnumber: "SG-312", status: "Delayed" } }),
+        prisma.flightIdentification.create({ data: { fnumber: "UK-478", status: "Cancelled" } }),
+        prisma.flightIdentification.create({ data: { fnumber: "AI-890", status: "Departed" } }),
+        prisma.flightIdentification.create({ data: { fnumber: "6E-550", status: "Arrived" } }),
+        prisma.flightIdentification.create({ data: { fnumber: "SG-777", status: "Delayed" } }),
+        prisma.flightIdentification.create({ data: { fnumber: "UK-900", status: "Departed" } }),
     ]);
+
+    console.log(`✅ Created ${flights.length} flight identifications`);
 
     console.log(`✅ Created ${flights.length} flights`);
 

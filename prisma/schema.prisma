@@ -23,15 +23,27 @@ enum BookingStatus {
   Changed
 }
 
-// ─── Flight ──────────────────────────────────────────────
+// ─── Flight Details ──────────────────────────────────────
 
-model Flight {
-  fid           Int            @id @default(autoincrement())
-  fnumber       String         @db.VarChar(20)
+model FlightDetails {
+  fnumber       String @id @db.VarChar(20)
   totalSeats    Int
-  arrivalCity   String         @db.VarChar(100)
-  departureCity String         @db.VarChar(100)
-  status        FlightStatus   @default(Departed)
+  arrivalCity   String @db.VarChar(100)
+  departureCity String @db.VarChar(100)
+
+  flights FlightIdentification[]
+
+  @@map("flight_details")
+}
+
+// ─── Flight Identification ───────────────────────────────
+
+model FlightIdentification {
+  fid     Int          @id @default(autoincrement())
+  fnumber String       @db.VarChar(20)
+  status  FlightStatus @default(Departed)
+
+  details FlightDetails @relation(fields: [fnumber], references: [fnumber], onDelete: Cascade)
 
   // M:N relations
   worksOn          WorksOn[]
@@ -40,8 +52,9 @@ model Flight {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@map("flights")
+  @@map("flight_identification")
 }
+
 
 // ─── Customer ────────────────────────────────────────────
 
@@ -174,7 +187,7 @@ model WorksOn {
   staffId Int
   hours   Float @default(0)
 
-  flight Flight      @relation(fields: [fid], references: [fid], onDelete: Cascade)
+  flight FlightIdentification @relation(fields: [fid], references: [fid], onDelete: Cascade)
   staff  FlightStaff @relation(fields: [staffId], references: [staffId], onDelete: Cascade)
 
   @@id([fid, staffId])
@@ -187,7 +200,7 @@ model FlightCustomer {
   fid   Int
   cusId Int
 
-  flight   Flight   @relation(fields: [fid], references: [fid], onDelete: Cascade)
+  flight   FlightIdentification @relation(fields: [fid], references: [fid], onDelete: Cascade)
   customer Customer @relation(fields: [cusId], references: [cusId], onDelete: Cascade)
 
   @@id([fid, cusId])
